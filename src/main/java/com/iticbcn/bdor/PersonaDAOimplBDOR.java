@@ -4,8 +4,11 @@ import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
-import java.util.List;
 
 public class PersonaDAOimplBDOR implements IntPersonaDAO{
 
@@ -24,7 +27,7 @@ public class PersonaDAOimplBDOR implements IntPersonaDAO{
 
         try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dpPassword)) {
 
-            String query = "INSERT INTO persones01 (nompers,cognomspers,datanaix,domicili,telefons)" +
+            String query = "INSERT INTO persones01 (nompers,cognomspers,datanaix,domicilipers,telefons)" +
             " VALUES (?,?,?,ROW(?,?,?,?,?),?)";
     
             boolean autocommitvalue = conn.getAutoCommit();
@@ -67,9 +70,69 @@ public class PersonaDAOimplBDOR implements IntPersonaDAO{
     }
 
     @Override
-    public List<Persones> MostrarPersones() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'MostrarPersones'");
+    public void MostrarPersones() {
+        try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dpPassword)) {
+
+            try (Statement statement = conn.createStatement()) {
+
+                String query = "SELECT nompers, cognomspers, datanaix, (domicilipers).carrer," +
+             "(domicilipers).nombre, (domicilipers).ciutat, (domicilipers).cp, (domicilipers).provincia" +
+             " from persones01";
+
+             ResultSet rset = statement.executeQuery(query);
+
+                 //obtenim numero de columnes i nom
+            int colNum = getColumnNames(rset);
+
+            //Si el nombre de columnes és >0 procedim a llegir i mostrar els registres
+            if (colNum > 0) {
+                recorrerRegistres(rset,colNum);
+            }
+
+
+            } catch (Exception ex) {
+                System.err.println(ex.getMessage());
+            }
+
+            
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+        }
+    }
+
+        public static int getColumnNames(ResultSet rs) throws SQLException {
+        
+        int numberOfColumns = 0;
+        
+        if (rs != null) {   
+            ResultSetMetaData rsMetaData = rs.getMetaData();
+            numberOfColumns = rsMetaData.getColumnCount();   
+        
+            for (int i = 1; i < numberOfColumns + 1; i++) {  
+                String columnName = rsMetaData.getColumnName(i);
+                System.out.print(columnName + ", ");
+            }
+        }
+        
+        System.out.println();
+
+        return numberOfColumns;
+        
+    }
+
+    public void recorrerRegistres(ResultSet rs, int ColNum) throws SQLException {
+
+        while(rs.next()) {
+            for(int i =0; i<ColNum; i++) {
+                if(i+1 == ColNum) {
+                    System.out.println(rs.getString(i+1));
+                } else {
+            
+                System.out.print(rs.getString(i+1)+ ", ");
+                }
+            } 
+        }
+            
     }
     
 }

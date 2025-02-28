@@ -2,6 +2,7 @@ package com.iticbcn.bdor;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 public class Main {
     
@@ -9,23 +10,23 @@ public class Main {
 
         String[] cnnset = DemanarConnexio();
 
-        PersonaDAOimplBDOR pDAOimplBDOR = new PersonaDAOimplBDOR (cnnset[1],cnnset[2],cnnset[3]);
+        PersonaDAOimplBDOR pDAOimplBDOR = new PersonaDAOimplBDOR (cnnset[0],cnnset[1],cnnset[2]);
 
         GestioOpcions(pDAOimplBDOR);
     }
 
     public static String[] DemanarConnexio() {
 
-        String[] connSettings = {};
+        String[] connSettings = new String[3];
 
         System.err.print("A quina BD us voleu connectar? : ");
         String database = Entrada.readLine();
-        connSettings[1] = "jdbc:postgresql://localhost:30000/" + database;
+        connSettings[0] = "jdbc:postgresql://localhost:54320/" + database;
         
         System.err.print("Usuari: ");
-        connSettings[2] = Entrada.readLine();
+        connSettings[1] = Entrada.readLine();
         System.err.print("Password: ");
-        connSettings[3] = Entrada.readLine();
+        connSettings[2] = Entrada.readLine();
 
         return connSettings;
 
@@ -36,7 +37,7 @@ public class Main {
         String opcio;
         boolean validOpt = true;
 
-        while (!validOpt) {
+        while (validOpt) {
 
             System.out.println("Què voleu fer?");
             System.out.println("A. Inserir nova persona");
@@ -47,11 +48,13 @@ public class Main {
             if (opcio.equalsIgnoreCase("a")) {
                 Persones per = DemanarDades();
                 pDAOimplBDOR.InserirPersona(per);
+                validOpt = false;
             } else if (opcio.equalsIgnoreCase("b")) {
+                pDAOimplBDOR.MostrarPersones();
+                validOpt = false;
     
             } else {
                 System.out.println("Opció no vàlida, introduir l'opció correcta");
-                validOpt = false;
             }
 
         }
@@ -73,25 +76,41 @@ public class Main {
         String carrer = Entrada.readLine();
         System.out.print("Nombre: ");    
         int nombre = Integer.parseInt(Entrada.readLine());
-        System.out.print("Ciutat");
+        System.out.print("Ciutat: ");
         String ciutat = Entrada.readLine();
-        System.out.print("Codi Postal");
+        System.out.print("Codi Postal: ");
         String cp = Entrada.readLine();
-        System.out.print("Provincia");
+        System.out.print("Provincia: ");
         String provincia = Entrada.readLine();
 
         Adresa add = new Adresa(carrer,nombre,ciutat,cp,provincia);
 
         boolean demanartelefons = true;
 
-        String [] telefons = {};
+        ArrayList<String> telflist = new ArrayList<>(); // Lista dinámica
 
-        while(demanartelefons) {
-            int tel = 1;
-            System.out.print("Introdueix el telefon [" + tel + "]" );
-            telefons[tel] = Entrada.readLine();
-            tel++;
+        int tel = 0;
+
+        while (demanartelefons) {
+            System.out.print("Introdueix el telefon [" + tel + "]: ");
+            String telefon = Entrada.readLine();
+
+            if (telefon.isEmpty()) { 
+                demanartelefons = false;
+            } else {
+                telflist.add(telefon);
+                tel++;
+            }
+
+            System.out.print("Vols introduir més telèfons s/n?: ");
+            String demtel = Entrada.readLine();
+
+            if (demtel.equalsIgnoreCase("n")) {
+                demanartelefons = false;
+            }
         }
+
+        String [] telefons = telflist.toArray(new String[0]);
 
         Persones pers = new Persones(nom,cognoms,add,dataNaix,telefons);
 
